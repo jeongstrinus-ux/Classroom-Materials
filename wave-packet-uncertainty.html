@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#081426" />
+  <title>평면파의 중첩과 불확정성 원리</title>
+  <style>
+    :root{--bg:#07111f;--panel:#0d1b2e;--panel2:#11233a;--line:#29415f;--text:#f4f8ff;--muted:#a8bad0;--cyan:#48d7ff;--blue:#76a9ff;--pink:#ff7daf;--yellow:#ffd166;--good:#74e0aa}
+    *{box-sizing:border-box} html{background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 78% 0,#153357 0,transparent 34rem),var(--bg)}
+    button,input{font:inherit} button{touch-action:manipulation}
+    .page{max-width:1440px;margin:auto;padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+    header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:16px}
+    h1{font-size:clamp(25px,3.2vw,44px);line-height:1.08;margin:0 0 6px;letter-spacing:-.035em} .subtitle{margin:0;color:var(--muted);font-size:clamp(14px,1.5vw,18px)}
+    .formula{white-space:nowrap;color:var(--cyan);font-size:clamp(14px,1.6vw,19px);background:#07111fcc;border:1px solid var(--line);padding:10px 14px;border-radius:14px}
+    .presets{display:flex;gap:8px;overflow:auto;padding:2px 0 12px;scrollbar-width:thin}
+    .preset,.action{min-height:44px;border:1px solid var(--line);border-radius:12px;padding:9px 14px;background:#10223a;color:var(--text);font-weight:700;cursor:pointer;white-space:nowrap}
+    .preset[aria-pressed="true"]{background:var(--cyan);border-color:var(--cyan);color:#03202a}.preset:focus-visible,.action:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+    main{display:grid;grid-template-columns:minmax(270px,340px) 1fr;gap:14px;align-items:start}
+    .card{background:linear-gradient(145deg,#0f2137e8,#0b192be8);border:1px solid var(--line);border-radius:18px;box-shadow:0 15px 40px #0005}
+    .controls{padding:16px;position:sticky;top:12px}.controls h2,.plot h2{font-size:17px;margin:0}.small{font-size:12px;color:var(--muted)}
+    .control{padding:13px 0;border-bottom:1px solid #203651}.control:last-of-type{border-bottom:0}.labelrow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.value{color:var(--cyan);font-variant-numeric:tabular-nums;font-weight:800}
+    input[type="range"]{width:100%;height:32px;accent-color:var(--cyan);cursor:pointer}.row{display:flex;gap:8px}.row>*{flex:1}.action.primary{background:var(--cyan);color:#04202a;border-color:var(--cyan)}
+    .toggles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.check{display:flex;align-items:center;gap:8px;min-height:40px;color:var(--muted);font-size:13px}.check input{width:19px;height:19px;accent-color:var(--cyan)}
+    .content{display:grid;gap:14px}.plot{padding:14px}.plothead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px}.dot{width:10px;height:3px;display:inline-block;vertical-align:middle;margin-right:5px;border-radius:4px}.dot.p{background:var(--pink)}.dot.w{background:var(--cyan)}.dot.c{background:#6a8aaa}
+    svg{display:block;width:100%;height:auto;min-height:240px;border-radius:12px;background:#071524}.grid{stroke:#1c3550;stroke-width:1}.axis{stroke:#66809e;stroke-width:1.2}.tick{fill:#8fa6bf;font-size:11px}.axislabel{fill:#bfd0e3;font-size:12px}.wave{fill:none;stroke:var(--cyan);stroke-width:2.4}.density{fill:url(#densityFill);stroke:var(--pink);stroke-width:2.2}.component{fill:none;stroke:#6a8aaa;stroke-width:1;opacity:.35}.spectrum{fill:url(#spectrumFill);stroke:var(--yellow);stroke-width:2.2}.meanline{stroke:#fff;stroke-width:1.2;stroke-dasharray:5 5;opacity:.7}
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{padding:13px 14px}.metric .name{color:var(--muted);font-size:13px}.metric .num{font-size:clamp(19px,2.2vw,28px);font-weight:850;font-variant-numeric:tabular-nums;margin-top:3px}.metric.product{border-color:#386c64}.metric.product .num{color:var(--good)}
+    .concept{padding:16px 18px;display:grid;grid-template-columns:1.25fr 1fr;gap:20px;align-items:center}.concept strong{color:var(--yellow)}.concept p{margin:0;line-height:1.55}.status{border-left:3px solid var(--cyan);padding-left:14px;color:#d9e7f6}
+    footer{color:#8398b0;font-size:12px;margin-top:12px;text-align:right}
+    @media(max-width:900px){header{align-items:flex-start;flex-direction:column}.formula{white-space:normal}main{grid-template-columns:1fr}.controls{position:static}.controls-inner{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}.controls .row,.toggles{grid-column:1/-1}.content{min-width:0}}
+    @media(max-width:620px){.page{padding:12px}.controls-inner{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.concept{grid-template-columns:1fr}.plot{padding:10px}.plothead{align-items:flex-start;flex-direction:column}svg{min-height:210px}.formula{font-size:13px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div><h1>평면파를 모으면, 입자는 어디에 있을까?</h1><p class="subtitle">파수 공간의 폭과 위치 공간의 폭을 직접 바꾸며 파군과 불확정성 원리를 관찰해 보세요.</p></div>
+    <div class="formula" aria-label="델타 엑스 곱하기 델타 케이가 이분의 일보다 크거나 같다">Δx·Δk ≥ ½ &nbsp; → &nbsp; Δx·Δp ≥ ℏ/2</div>
+  </header>
+
+  <nav class="presets" aria-label="수업용 프리셋">
+    <button class="preset" data-preset="plane" aria-pressed="false">① 단일 평면파</button>
+    <button class="preset" data-preset="few" aria-pressed="false">② 소수의 평면파</button>
+    <button class="preset" data-preset="packet" aria-pressed="true">③ 국소화된 파군</button>
+    <button class="preset" data-preset="narrow" aria-pressed="false">④ 더 좁은 파군</button>
+  </nav>
+
+  <main>
+    <aside class="card controls">
+      <h2>실험 조건</h2><p class="small">무차원 단위: ℏ = m = 1</p>
+      <div class="controls-inner">
+        <div class="control"><div class="labelrow"><label for="count">평면파 개수 N</label><output id="countVal" class="value">51</output></div><input id="count" type="range" min="1" max="101" step="2" value="51"></div>
+        <div class="control"><div class="labelrow"><label for="k0">중심 파수 k₀</label><output id="k0Val" class="value">5.0</output></div><input id="k0" type="range" min="0" max="10" step="0.1" value="5"></div>
+        <div class="control"><div class="labelrow"><label for="sigmaK">파수 폭 σₖ</label><output id="sigmaKVal" class="value">1.00</output></div><input id="sigmaK" type="range" min="0.1" max="3.5" step="0.05" value="1"></div>
+        <div class="control"><div class="labelrow"><label for="x0">초기 중심 x₀</label><output id="x0Val" class="value">0.0</output></div><input id="x0" type="range" min="-10" max="10" step="0.2" value="0"></div>
+        <div class="control"><div class="labelrow"><label for="time">시간 t</label><output id="timeVal" class="value">0.00</output></div><input id="time" type="range" min="0" max="3" step="0.01" value="0"></div>
+        <div class="row"><button id="play" class="action primary" type="button">▶ 재생</button><button id="resetTime" class="action" type="button">시간 초기화</button></div>
+        <div class="toggles">
+          <label class="check"><input id="showWave" type="checkbox" checked> Re[ψ] 보기</label>
+          <label class="check"><input id="showDensity" type="checkbox" checked> |ψ|² 보기</label>
+          <label class="check"><input id="showComponents" type="checkbox"> 개별 평면파 보기</label>
+          <label class="check"><input id="showMean" type="checkbox" checked> 평균 위치 보기</label>
+        </div>
+      </div>
+    </aside>
+
+    <section class="content">
+      <article class="card plot"><div class="plothead"><h2>위치 공간</h2><div class="legend"><span><i class="dot w"></i>Re[ψ(x,t)]</span><span><i class="dot p"></i>|ψ(x,t)|²</span><span><i class="dot c"></i>개별 평면파</span></div></div><svg id="xPlot" viewBox="0 0 900 340" role="img"><title>위치 공간의 파동함수와 확률밀도</title><desc>여러 평면파의 중첩으로 만들어진 파군을 보여줍니다.</desc><defs><linearGradient id="densityFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7daf" stop-opacity=".55"/><stop offset="1" stop-color="#ff7daf" stop-opacity=".03"/></linearGradient></defs></svg></article>
+      <article class="card plot"><div class="plothead"><h2>파수 공간</h2><div class="legend"><span><i class="dot" style="background:var(--yellow)"></i>|A(k)|²</span></div></div><svg id="kPlot" viewBox="0 0 900 260" role="img"><title>파수 공간의 분포</title><desc>중첩에 사용된 파수들의 확률 분포를 보여줍니다.</desc><defs><linearGradient id="spectrumFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd166" stop-opacity=".6"/><stop offset="1" stop-color="#ffd166" stop-opacity=".03"/></linearGradient></defs></svg></article>
+      <section class="metrics" aria-live="polite">
+        <div class="card metric"><div class="name">평균 위치 ⟨x⟩</div><div id="meanX" class="num">0.00</div></div>
+        <div class="card metric"><div class="name">위치 불확정성 Δx</div><div id="dx" class="num">0.50</div></div>
+        <div class="card metric"><div class="name">파수 불확정성 Δk</div><div id="dk" class="num">1.00</div></div>
+        <div class="card metric product"><div class="name">불확정성 곱 Δx·Δk</div><div id="product" class="num">0.50</div></div>
+      </section>
+      <section class="card concept"><p><strong>핵심 관찰</strong><br>σₖ를 크게 하면 더 다양한 파수의 평면파가 필요하고, 위치의 확률 분포는 더 좁아집니다. 즉, <strong>Δk ↑ → Δx ↓</strong>입니다.</p><p id="status" class="status">여러 평면파가 x₀ 부근에서 같은 위상으로 만나 국소화된 파군을 만듭니다.</p></section>
+    </section>
+  </main>
+  <footer>자유입자 파동묶음 · 가우스 파수 분포 · 화면의 값은 유한한 계산 구간에서 얻은 수치값입니다.</footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const NS='http://www.w3.org/2000/svg';
+  const $=id=>document.getElementById(id);
+  const controls={count:$('count'),k0:$('k0'),sigmaK:$('sigmaK'),x0:$('x0'),time:$('time')};
+  const outputs={count:$('countVal'),k0:$('k0Val'),sigmaK:$('sigmaKVal'),x0:$('x0Val'),time:$('timeVal')};
+  let playing=false,last=0,raf=0;
+  const presets={plane:{count:1,k0:5,sigmaK:.1,x0:0,time:0},few:{count:7,k0:5,sigmaK:1,x0:0,time:0},packet:{count:51,k0:5,sigmaK:1,x0:0,time:0},narrow:{count:81,k0:5,sigmaK:2,x0:0,time:0}};
+  const S=(tag,attrs={})=>{const e=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);return e};
+  const pathFrom=(pts,sx,sy)=>pts.map((p,i)=>(i?'L':'M')+sx(p[0]).toFixed(2)+','+sy(p[1]).toFixed(2)).join(' ');
+  const fmt=(v,n=2)=>Number.isFinite(v)?v.toFixed(n):'—';
+
+  function axes(svg,w,h,m,xmin,xmax,ymin,ymax,xlabel,ylabel,xTicks=8,yTicks=4){
+    [...svg.querySelectorAll('.drawn')].forEach(n=>n.remove());
+    const g=S('g',{class:'drawn'}), sx=x=>m.l+(x-xmin)/(xmax-xmin)*(w-m.l-m.r), sy=y=>h-m.b-(y-ymin)/(ymax-ymin)*(h-m.t-m.b);
+    for(let i=0;i<=xTicks;i++){const x=xmin+(xmax-xmin)*i/xTicks;g.append(S('line',{x1:sx(x),x2:sx(x),y1:m.t,y2:h-m.b,class:'grid'}));const t=S('text',{x:sx(x),y:h-m.b+20,'text-anchor':'middle',class:'tick'});t.textContent=fmt(x,Math.abs(xmax-xmin)<8?1:0);g.append(t)}
+    for(let i=0;i<=yTicks;i++){const y=ymin+(ymax-ymin)*i/yTicks;g.append(S('line',{x1:m.l,x2:w-m.r,y1:sy(y),y2:sy(y),class:'grid'}));const t=S('text',{x:m.l-8,y:sy(y)+4,'text-anchor':'end',class:'tick'});t.textContent=fmt(y,1);g.append(t)}
+    g.append(S('line',{x1:m.l,x2:w-m.r,y1:h-m.b,y2:h-m.b,class:'axis'}));g.append(S('line',{x1:m.l,x2:m.l,y1:m.t,y2:h-m.b,class:'axis'}));
+    const tx=S('text',{x:(m.l+w-m.r)/2,y:h-8,'text-anchor':'middle',class:'axislabel'});tx.textContent=xlabel;g.append(tx);const ty=S('text',{x:15,y:(m.t+h-m.b)/2,transform:`rotate(-90 15 ${(m.t+h-m.b)/2})`,'text-anchor':'middle',class:'axislabel'});ty.textContent=ylabel;g.append(ty);svg.append(g);return{g,sx,sy};
+  }
+
+  function calculate(){
+    const N=+controls.count.value,k0=+controls.k0.value,sigma=+controls.sigmaK.value,x0=+controls.x0.value,t=+controls.time.value;
+    const ks=[],amps=[];
+    if(N===1){ks.push(k0);amps.push(1)} else {for(let i=0;i<N;i++){const k=k0-4*sigma+8*sigma*i/(N-1);ks.push(k);amps.push(Math.exp(-Math.pow(k-k0,2)/(4*sigma*sigma)))}}
+    const knorm=Math.sqrt(amps.reduce((s,a)=>s+a*a,0));for(let i=0;i<amps.length;i++)amps[i]/=knorm;
+    const xs=[],re=[],im=[],rho=[];const xmin=-20,xmax=20,nx=641,dxg=(xmax-xmin)/(nx-1);
+    for(let j=0;j<nx;j++){const x=xmin+j*dxg;let rr=0,ii=0;for(let i=0;i<N;i++){const ph=ks[i]*(x-x0)-.5*ks[i]*ks[i]*t;rr+=amps[i]*Math.cos(ph);ii+=amps[i]*Math.sin(ph)}xs.push(x);re.push(rr);im.push(ii);rho.push(rr*rr+ii*ii)}
+    let norm=rho.reduce((s,v,i)=>s+v*(i===0||i===nx-1?.5:1),0)*dxg;norm=Math.sqrt(norm);for(let i=0;i<nx;i++){re[i]/=norm;im[i]/=norm;rho[i]/=norm*norm}
+    const integrate=f=>f.reduce((s,v,i)=>s+v*(i===0||i===nx-1?.5:1),0)*dxg;
+    const meanX=integrate(rho.map((r,i)=>r*xs[i])),varX=Math.max(0,integrate(rho.map((r,i)=>r*Math.pow(xs[i]-meanX,2))));
+    const probs=amps.map(a=>a*a),meanK=probs.reduce((s,p,i)=>s+p*ks[i],0),varK=Math.max(0,probs.reduce((s,p,i)=>s+p*Math.pow(ks[i]-meanK,2),0));
+    return{N,k0,sigma,x0,t,ks,amps,probs,xs,re,rho,meanX,dx:Math.sqrt(varX),meanK,dk:Math.sqrt(varK)};
+  }
+
+  function renderX(d){
+    const svg=$('xPlot'),w=900,h=340,m={l:54,r:20,t:18,b:38};let ampMax=Math.max(...d.re.map(Math.abs))||1,rhoMax=Math.max(...d.rho)||1;
+    const a=axes(svg,w,h,m,-20,20,-1.1,1.1,'위치 x','정규화된 크기',8,4);
+    if($('showComponents').checked&&d.N>1){const maxShown=Math.min(7,d.N);for(let q=0;q<maxShown;q++){const idx=Math.round(q*(d.N-1)/(maxShown-1));const pts=d.xs.map(x=>[x,.32*Math.cos(d.ks[idx]*(x-d.x0)-.5*d.ks[idx]*d.ks[idx]*d.t)]);a.g.append(S('path',{d:pathFrom(pts,a.sx,a.sy),class:'component'}))}}
+    if($('showDensity').checked){const pts=d.xs.map((x,i)=>[x,-1+1.9*d.rho[i]/rhoMax]);let p=pathFrom(pts,a.sx,a.sy)+` L${a.sx(20)},${a.sy(-1)} L${a.sx(-20)},${a.sy(-1)} Z`;a.g.append(S('path',{d:p,class:'density'}))}
+    if($('showWave').checked){const pts=d.xs.map((x,i)=>[x,.92*d.re[i]/ampMax]);a.g.append(S('path',{d:pathFrom(pts,a.sx,a.sy),class:'wave'}))}
+    if($('showMean').checked&&Number.isFinite(d.meanX)){a.g.append(S('line',{x1:a.sx(d.meanX),x2:a.sx(d.meanX),y1:m.t,y2:h-m.b,class:'meanline'}))}
+  }
+
+  function renderK(d){
+    const svg=$('kPlot'),w=900,h=260,m={l:54,r:20,t:18,b:38};const span=Math.max(4,4.7*d.sigma),xmin=d.k0-span,xmax=d.k0+span,maxP=Math.max(...d.probs)||1;const a=axes(svg,w,h,m,xmin,xmax,0,1.08,'파수 k','상대 세기',8,4);
+    if(d.N===1){a.g.append(S('line',{x1:a.sx(d.k0),x2:a.sx(d.k0),y1:a.sy(0),y2:a.sy(1),class:'spectrum'}));a.g.append(S('circle',{cx:a.sx(d.k0),cy:a.sy(1),r:5,fill:'#ffd166'}))}
+    else{const pts=d.ks.map((k,i)=>[k,d.probs[i]/maxP]);let p=pathFrom(pts,a.sx,a.sy)+` L${a.sx(d.ks.at(-1))},${a.sy(0)} L${a.sx(d.ks[0])},${a.sy(0)} Z`;a.g.append(S('path',{d:p,class:'spectrum'}))}
+    a.g.append(S('line',{x1:a.sx(d.meanK),x2:a.sx(d.meanK),y1:m.t,y2:h-m.b,class:'meanline'}));
+  }
+
+  function update(){
+    outputs.count.textContent=controls.count.value;outputs.k0.textContent=(+controls.k0.value).toFixed(1);outputs.sigmaK.textContent=(+controls.sigmaK.value).toFixed(2);outputs.x0.textContent=(+controls.x0.value).toFixed(1);outputs.time.textContent=(+controls.time.value).toFixed(2);
+    const d=calculate();renderX(d);renderK(d);$('meanX').textContent=fmt(d.meanX);$('dx').textContent=d.N===1?'비국소화':fmt(d.dx);$('dk').textContent=d.N===1?'0 (단일 k)':fmt(d.dk);$('product').textContent=d.N===1?'정의 불가':fmt(d.dx*d.dk,3);
+    if(d.N===1)$('status').textContent='이상적인 단일 평면파는 모든 위치에 퍼져 있어 위치가 국소화되지 않습니다. 표시된 화면의 폭을 Δx로 해석하면 안 됩니다.';
+    else if(d.N<15)$('status').textContent='파수 성분이 적어 완전히 매끈한 파군이 되지 않고, 반복되는 간섭 무늬가 눈에 띕니다.';
+    else if(d.t>.05)$('status').textContent='자유입자 파군은 시간이 지나며 이동하고 퍼집니다. Δk는 그대로지만 Δx와 불확정성 곱은 커질 수 있습니다.';
+    else $('status').textContent='여러 평면파가 x₀ 부근에서 같은 위상으로 만나 국소화된 파군을 만듭니다.';
+  }
+  Object.values(controls).forEach(el=>el.addEventListener('input',()=>{document.querySelectorAll('.preset').forEach(b=>b.setAttribute('aria-pressed','false'));update()}));
+  ['showWave','showDensity','showComponents','showMean'].forEach(id=>$(id).addEventListener('change',update));
+  document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>{const p=presets[b.dataset.preset];for(const k in p)controls[k].value=p[k];document.querySelectorAll('.preset').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));update()}));
+  $('resetTime').addEventListener('click',()=>{controls.time.value=0;update()});
+  $('play').addEventListener('click',()=>{playing=!playing;$('play').textContent=playing?'❚❚ 일시정지':'▶ 재생';if(playing){last=performance.now();raf=requestAnimationFrame(tick)}else cancelAnimationFrame(raf)});
+  function tick(now){if(!playing)return;const dt=Math.min(.05,(now-last)/1000);last=now;let t=+controls.time.value+dt*.55;if(t>+controls.time.max)t=0;controls.time.value=t;update();raf=requestAnimationFrame(tick)}
+  update();
+})();
+</script>
+</body>
+</html>
